@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstring>
 #include <cassert>
 #include <algorithm>
 
@@ -83,12 +82,16 @@ struct vector
 
     void push_back(T const& x)
     {
-        T safe = x;
         if (size_ == capacity_)
         {
+            T safe = x;
             increase_capacity();
+            new (data_ + size_) T(safe);
         }
-        new (data_ + size_) T(safe);
+        else
+        {
+            new (data_ + size_) T(x);
+        }
         size_++;
     }
 
@@ -181,10 +184,13 @@ struct vector
     {
         ptrdiff_t l = first - begin();
         ptrdiff_t len = last - first;
-        std::rotate(begin() + l, begin() + l + len, end());
-        for (size_t i = 0; i < len; i++)
+        if (len != 0)
         {
-            pop_back();
+            std::rotate(begin() + l, begin() + l + len, end());
+            for (size_t i = 0; i < len; i++)
+            {
+                pop_back();
+            }
         }
         return begin() + l;
     }
@@ -212,7 +218,7 @@ private:
 
     void increase_capacity()
     {
-        size_t new_capacity = (capacity_ + 1) * 2;
+        size_t new_capacity = capacity_ == 0 ? 1 : capacity_ * 2;
         vector<T> other(data_, size_, new_capacity);
         swap(other);
     }
