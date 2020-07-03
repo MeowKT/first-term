@@ -1,6 +1,6 @@
 	
-  				section         .text
-  				%define 		LEN 128 * 8
+                section         .text
+                %define         LEN 128 * 8
 
                 global          _start
 _start:
@@ -49,7 +49,7 @@ mul_long_long:
 
                 clc
 .loop:          
-				; remember the first multiplier
+                ; remember the first multiplier
                 push            rsi
                 lea             rsi, [rbp - LEN]
                 call            copy_long_number
@@ -72,7 +72,7 @@ mul_long_long:
                 pop             rdi
                 pop             rsi
            
-           		; increase offset
+                ; increase offset
                 inc             r9
                 cmp		 		r9, rcx
                 jne             .loop
@@ -132,7 +132,7 @@ add_long_long:
                 dec             rcx
                 jnz             .loop
 
-               	; add remainder from mul_long_short
+                ; add remainder from mul_long_short
                 adc		 		[rsi + 8 * r9], r10
 
                 pop             r9
