@@ -29,12 +29,12 @@ _start:
 
                 jmp             exit
                 
-; multuplies two long numbers
+; multiplies two long numbers
 ;    rdi - adress of multiplyer #1 (long number)
 ;    rsi - adress of multiplyer #2 (long number)
 ;    rcx - length of long number in qwords
 ; result:
-;   answer is written to r8
+;   answer is written to r8(length of the answer is 2 * rcx)
 mul_long_long:
                 push            rsi
                 push            rdi
@@ -47,18 +47,18 @@ mul_long_long:
                 mov             rbp, rsp 
                 sub             rsp, LEN
 
-                clc
 .loop:          
                 ; remember the first multiplier
+                mov 			r11, rsp
                 push            rsi
-                lea             rsi, [rbp - LEN]
+                lea             rsi, [r11]
                 call            copy_long_number
                 pop             rsi
 
                 ; multiply the first multiplier by the next digit of the second
                 mov             rbx, [rsi]
                 push 			rdi
-                lea 			rdi, [rbp - LEN]
+                lea 			rdi, [r11]
                 call            mul_long_short
                 pop 			rdi            
                 add             rsi, 8
@@ -66,7 +66,7 @@ mul_long_long:
                 ; add this number with offset
                 push            rsi
                 push            rdi
-                lea 			rdi, [rbp - LEN]
+                lea 			rdi, [r11]
                 mov             rsi, r8
                 call            add_long_long 
                 pop             rdi
@@ -114,6 +114,7 @@ copy_long_number:
 ;    rsi - address of summand #2 (long number)
 ;    rcx - length of long numbers in qwords
 ;    r9 - offset rdi in qwords
+;    r10 - reminder from mul_long_short
 ; result:
 ;    sum is written to rsi
 add_long_long:
