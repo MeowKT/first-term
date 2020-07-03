@@ -21,7 +21,7 @@ _start:
                 call            mul_long_long
 
                 mov             rdi, r8
-                add 			rcx, rcx
+                add             rcx, rcx
                 call            write_long
 
                 mov             al, 0x0a
@@ -39,7 +39,7 @@ mul_long_long:
                 push            rsi
                 push            rdi
                 push            rcx 
-                push 			r10
+                push            r10
 
                 xor             r9, r9
 
@@ -49,7 +49,7 @@ mul_long_long:
 
 .loop:          
                 ; remember the first multiplier
-                mov 			r11, rsp
+                mov             r11, rsp
                 push            rsi
                 lea             rsi, [r11]
                 call            copy_long_number
@@ -57,16 +57,16 @@ mul_long_long:
 
                 ; multiply the first multiplier by the next digit of the second
                 mov             rbx, [rsi]
-                push 			rdi
-                lea 			rdi, [r11]
+                push            rdi
+                lea             rdi, [r11]
                 call            mul_long_short
-                pop 			rdi            
+                pop             rdi            
                 add             rsi, 8
        
                 ; add this number with offset
                 push            rsi
                 push            rdi
-                lea 			rdi, [r11]
+                lea             rdi, [r11]
                 mov             rsi, r8
                 call            add_long_long 
                 pop             rdi
@@ -74,12 +74,12 @@ mul_long_long:
            
                 ; increase offset
                 inc             r9
-                cmp		 		r9, rcx
+                cmp             r9, rcx
                 jne             .loop
 
                 mov             rsp, rbp   
 
-                pop 			r10   
+                pop             r10
                 pop             rcx
                 pop             rdi 
                 pop             rsi
