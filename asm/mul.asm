@@ -1,24 +1,27 @@
-
+	
   section         .text
 
                 global          _start
 _start:
 
-                sub             rsp, 4 * 128 * 8
+                sub             rsp, 5 * 128 * 8
                 mov             rcx, 128
 
                 lea             rdi, [rsp + 128 * 8]
                 call            read_long
                 mov             rdi, rsp
                 call            read_long
-                lea             rsi, [rsp + 128 * 8]
 
-                lea             r8, [rsp + 2 * 128 * 8]
+                lea             rsi, [rsp + 128 * 8]
+                lea 			r15, [rsp + 2 * 128 * 8]
+                lea             r8, [rsp + 3 * 128 * 8]
 ;   rsi - first multiplyer
 ;   rdi - second multiplyer
 ;   r8 - answer 
                 call            mul_long_long
+
                 mov             rdi, r8
+                add 			rcx, rcx
                 call            write_long
 
                 mov             al, 0x0a
@@ -36,48 +39,37 @@ mul_long_long:
                 push            rsi
                 push            rdi
                 push            rcx 
+                push 			r11
 
                 xor             r9, r9
-                
-                mov             rbp, rsp 
-                sub             rsp, 128 * 8
-
+                clc
+.loop:          
                 push            rsi
-                lea             rsi, [rbp - 128 * 8]
+                lea             rsi, [r15]
                 call            copy_long_number
                 pop             rsi
 
-                clc
-.loop:          
                 mov             rbx, [rsi]
-                push            rsi
+                push 			rdi
+                lea 			rdi, [r15]
                 call            mul_long_short
-                pop             rsi                
+                pop 			rdi            
                 add             rsi, 8
        
 
                 push            rsi
                 push            rdi
+                lea 			rdi, [r15]
                 mov             rsi, r8
                 call            add_long_long 
+                pop             rdi
+                pop             rsi
+           
                 inc             r9
-                pop             rdi
-                pop             rsi
-                
+                cmp		 		r9, rcx
+                jne             .loop
 
-                push            rdi
-                push            rsi
-                mov             rsi, rdi
-                lea             rdi, [rbp - 128 * 8]
-                call            copy_long_number
-                pop             rsi
-                pop             rdi
-
-                dec             rcx
-                jnz             .loop
-
-                
-                mov             rsp, rbp    
+                pop 			r11   
                 pop             rcx
                 pop             rdi 
                 pop             rsi
@@ -119,7 +111,6 @@ add_long_long:
                 push            rsi
                 push            rcx
                 push            r9
-                add             rcx, r9
 
                 clc
 .loop:
@@ -129,6 +120,8 @@ add_long_long:
                 lea             rsi, [rsi + 8]
                 dec             rcx
                 jnz             .loop
+
+                adc		 		[rsi + 8 * r9], r11
 
                 pop             r9
                 pop             rcx
@@ -173,15 +166,15 @@ mul_long_short:
                 push            rdi
                 push            rcx
 
-                xor             rsi, rsi
+                xor             r11, r11
 .loop:
                 mov             rax, [rdi]
                 mul             rbx
-                add             rax, rsi
+                add             rax, r11
                 adc             rdx, 0
                 mov             [rdi], rax
                 add             rdi, 8
-                mov             rsi, rdx
+                mov             r11, rdx
                 dec             rcx
                 jnz             .loop
 
