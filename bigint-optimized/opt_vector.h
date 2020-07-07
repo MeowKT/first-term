@@ -138,7 +138,7 @@ private:
     void swap(opt_vector& other) {
         if (is_small()) {
             size_t buf_sz = size();
-            uint32_t buf[buf_sz];
+            uint32_t buf[SMALL_SZ];
             std::copy_n(val, buf_sz, buf);
             if (other.is_small()) {
                 std::copy_n(other.val, other.size(), val);
@@ -173,7 +173,7 @@ private:
     void become_big() {
         if (is_small()) {
             _size |= BIG_FLAG;
-            uint32_t buf[size()];
+            uint32_t buf[SMALL_SZ];
             std::copy_n(val, size(), buf);
             data = get_big_data(buf, size(), size());
         }
