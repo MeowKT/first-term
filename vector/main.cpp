@@ -322,6 +322,28 @@ TEST(correctness, insert_end) {
   element<size_t>::expect_no_instances();
 }
 
+TEST(performance, insert)
+{
+    const size_t N = 10000;
+    vector<vector<int>> a;
+
+    for (size_t i = 0; i < N; ++i)
+    {
+        a.push_back(vector<int>());
+        for (size_t j = 0; j < N; ++j)
+        {
+            a.back().push_back(j);
+        }
+    }
+
+    vector<int> temp;
+    for (size_t i = 0; i < N; ++i)
+    {
+        temp.push_back(i);
+    }
+    a.insert(a.begin(), temp);
+}
+
 TEST(correctness, erase) {
   size_t const N = 500;
   {
