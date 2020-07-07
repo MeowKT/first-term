@@ -50,7 +50,7 @@ public:
             val[_size] = x;
         } else {
             if (size() == capacity()) {
-                data = get_big_data(begin(), size(), capacity() * 2);
+                expand(capacity() * 2);
             }
             data[size() + 2] = x;
         }
@@ -74,7 +74,7 @@ public:
             _size = n;
         } else {
             if (n > capacity()) {
-                data = get_big_data(begin(), size(), n);
+                expand(n);
             }
             while (size() < n) {
                 data[size() + 2] = 0;
@@ -170,6 +170,12 @@ private:
         return new_data;
     }
 
+    void expand(size_t new_capacity) {
+        uint32_t* new_data = get_big_data(begin(), size(), new_capacity);
+        operator delete(data);
+        data = new_data;
+    }
+
     void become_big() {
         if (is_small()) {
             _size |= BIG_FLAG;
@@ -186,4 +192,3 @@ private:
         }
     }
 };
-
