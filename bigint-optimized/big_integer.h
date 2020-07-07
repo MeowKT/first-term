@@ -1,13 +1,13 @@
 #pragma once
 #include <utility>
+#include <vector>
 #include <string>
 #include <algorithm>
 #include <functional>
-#include <opt_vector.h>
 
 struct big_integer {
 private:
-    opt_vector digits;
+    std::vector<uint32_t> digits;
     __uint8_t sign;
 public:
     big_integer();

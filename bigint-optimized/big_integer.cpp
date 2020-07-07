@@ -2,7 +2,12 @@
 
 using uint128_t = unsigned __int128;
 
-static big_integer abs(big_integer const&);
+namespace {
+    big_integer abs(big_integer const& x)
+    {
+        return x < 0 ? -x : x;
+    }
+}
 
 big_integer::big_integer() : sign(false) {}
 
@@ -118,7 +123,7 @@ big_integer operator*(big_integer const& l, big_integer const& r)
         {
             uint64_t tmp = static_cast<uint64_t>(a.digits[i]) * b.digits[j] + ans.digits[i + j] + c;
             ans.digits[i + j] = static_cast<uint32_t>(tmp & UINT32_MAX);
-            c = static_cast<uint32_t>(tmp >> 32);
+            c = static_cast<uint32_t>(tmp >> 32u);
         }
         ans.digits[i + b.digits.size()] = c;
     }
@@ -135,7 +140,6 @@ big_integer operator/(big_integer const& l, big_integer const& r)
     big_integer dividend = abs(l);
     big_integer divider = abs(r);
     big_integer ans;
-    big_integer ml;
     if (dividend < divider)
     {
         return 0;
@@ -147,10 +151,11 @@ big_integer operator/(big_integer const& l, big_integer const& r)
     else
     {
         dividend.digits.push_back(0);
-        size_t m = divider.digits.size() + 1;
         size_t n = dividend.digits.size();
+        size_t m = divider.digits.size() + 1;
         ans.digits.resize(n - m + 1);
         uint32_t quot = 0;
+        big_integer ml;
         for (size_t i = 0; i <= n - m; i++)
         {
             quot = trial(dividend, divider);
@@ -185,7 +190,7 @@ void difference(big_integer &a, big_integer const &b, size_t ind)
         uint32_t x = a.digits[start + i];
         uint32_t y = (i < b.digits.size() ? b.digits[i] : 0);
         uint64_t res = static_cast<uint64_t>(x) - y - c;
-        c = (y + c > x);
+        c = (y + static_cast<uint32_t>(c) > x);
         a.digits[start + i] = (uint32_t)res;
     }
 }
@@ -204,10 +209,10 @@ bool smaller(big_integer const &a, big_integer const &b, size_t ind)
 
 uint32_t trial(big_integer &a, big_integer &b)
 {
-    uint128_t x = (static_cast<uint128_t>(a.digits[a.digits.size() - 1]) << 64) |
-                  (static_cast<uint128_t>(a.digits[a.digits.size() - 2]) << 32) |
+    uint128_t x = (static_cast<uint128_t>(a.digits[a.digits.size() - 1]) << 64u) |
+                  (static_cast<uint128_t>(a.digits[a.digits.size() - 2]) << 32u) |
                   (static_cast<uint128_t>(a.digits[a.digits.size() - 3]));
-    uint128_t y = ((static_cast<uint128_t>(b.digits[b.digits.size() - 1]) << 32) | static_cast<uint128_t>(b.digits[b.digits.size() - 2]));
+    uint128_t y = ((static_cast<uint128_t>(b.digits[b.digits.size() - 1]) << 32u) | static_cast<uint128_t>(b.digits[b.digits.size() - 2]));
     return static_cast<uint32_t>(std::min(static_cast<uint128_t>(UINT32_MAX), x / y));
 }
 
@@ -218,7 +223,7 @@ big_integer div_short(big_integer const & dividend, uint32_t divider)
     uint64_t reminder = 0;
     for (size_t i = dividend.digits.size(); i > 0; i--)
     {
-        cur = reminder << 32;
+        cur = reminder << 32u;
         cur |= dividend.digits[i - 1];
         res.digits.push_back(static_cast<uint32_t>(cur / divider));
         reminder = cur % divider;
@@ -228,19 +233,35 @@ big_integer div_short(big_integer const & dividend, uint32_t divider)
     return res;
 }
 
+namespace {
+    uint32_t _and(uint32_t a, uint32_t b)
+    {
+        return a & b;
+    }
+    uint32_t _or(uint32_t a, uint32_t b)
+    {
+        return a | b;
+    }
+    uint32_t _xor(uint32_t a, uint32_t b)
+    {
+        return a ^ b;
+    }
+
+}
+
 big_integer operator&(big_integer const& a, big_integer const& b)
 {
-    return bit_op(a, b, [](int32_t a, int32_t b) {return a & b;});
+    return bit_op(a, b, _and);
 }
 
 big_integer operator|(big_integer const& a, big_integer const& b)
 {
-    return bit_op(a, b, [](int32_t a, int32_t b) {return a | b;});
+    return bit_op(a, b, _or);
 }
 
 big_integer operator^(big_integer const& a, big_integer const& b)
 {
-    return bit_op(a, b, [](int32_t a, int32_t b) {return a ^ b;});
+    return bit_op(a, b, _xor);
 }
 
 big_integer operator>>(big_integer const& _a, int b)
@@ -254,9 +275,9 @@ big_integer operator>>(big_integer const& _a, int b)
     }
     a.digits.resize(a.digits.size() - cnt_digits);
     a.erase_leading_zeros();
-    big_integer _b = (static_cast<uint32_t>(1) << reminder);
-    a /= _b;
-    if (a < 0 && a * _b != _a)
+    big_integer rem = (static_cast<uint32_t>(1) << reminder);
+    a /= rem;
+    if (a < 0 && a * rem != _a)
     {
         a--;
     }
@@ -321,7 +342,7 @@ big_integer& big_integer::operator+=(big_integer x)
     {
         if (!c)
         {
-            digits.push_back(UINT32_MAX ^ 1);
+            digits.push_back(UINT32_MAX ^ 1u);
         }
     }
     else if (c)
@@ -489,9 +510,4 @@ big_integer bit_op(big_integer a, big_integer b, const std::function<uint32_t(ui
     res.sign = f(a.sign, b.sign);
     res.erase_leading_zeros();
     return res;
-}
-
-static big_integer abs(big_integer const& x)
-{
-    return x < 0 ? -x : x;
 }
